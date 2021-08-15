@@ -54,11 +54,14 @@ class Objeto {
 }
 
 class Personagem extends Objeto {
-  constructor (sprite, dx, dy, largura, altura) {
+  constructor (sprite, dx, dy, largura, altura, px, py) {
     super(sprite, dx, dy, largura, altura);
 
     this.gravidade = 0.25;
     this.velocidade = 0;
+
+    this.x = px;
+    this.y = py;
   }
 
   queda(){

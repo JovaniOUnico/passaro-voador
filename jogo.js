@@ -11,34 +11,65 @@ sprite.src = './sprites.png';
 const canvas = document.querySelector('canvas');
 const contexto = canvas.getContext('2d');
 
-let passaro = new Personagem(sprite, 0, 0, 33, 24);
+const Telas = {
+  inicio: {
+    msgReady: new Objeto(sprite, 134, 0, 174, 152),
+    desenha() {
+      Telas.jogo.desenha();
 
-//define as posições de inicio do flappy bird
-passaro.initPosX(10);
-passaro.initPosY(50);
+      this.msgReady.desenha(contexto, (canvas.width/2) - this.msgReady.altura / 2, 50);
 
-let chao = new Objeto(sprite, 0, 610, 224, 112);
+      window.addEventListener('click', function(){
+        if(Telas.telaAtiva.click){
+          Telas.telaAtiva.click();
+        }
+      });
+    },
+    click() {
+      Telas.mudaTela(Telas.jogo);
+    },
+    atualiza() {      
+    }
+  },
+  jogo: {
+    passaro: new Personagem(sprite, 0, 0, 33, 24, 10, 50),
+    chao: new Objeto(sprite, 0, 610, 224, 112),
+    bg: new Objeto(sprite, 390,0, 275, 204),
+    desenha() {
 
-let bg = new Objeto(sprite, 390,0, 275, 204);
+      //desenho fundo
+      contexto.fillStyle = '#70c5ce';
+      contexto.fillRect(0, 0, canvas.width, canvas.height);
+
+      //desenho do background
+      this.bg.desenha(contexto, 0, canvas.height - this.bg.altura);
+      this.bg.desenha(contexto, this.bg.largura, canvas.height - this.bg.altura);
+
+      //desenho do chão
+      this.chao.desenha(contexto, 0, canvas.height - this.chao.altura);
+      this.chao.desenha(contexto, 0 + this.chao.largura, canvas.height - this.chao.altura);
+
+      this.passaro.desenha(contexto);
+    },
+    atualiza() {
+      this.passaro.queda();
+    }
+  },
+  telaAtiva: {},
+  mudaTela(novaTela) {
+    this.telaAtiva = novaTela;
+  }
+}
 
 function loop(){
 
-  //desenho fundo
-  contexto.fillStyle = '#70c5ce';
-  contexto.fillRect(0, 0, canvas.width, canvas.height);
-
-  bg.desenha(contexto, 0, canvas.height - bg.altura);
-  bg.desenha(contexto, bg.largura, canvas.height - bg.altura);
-
-  chao.desenha(contexto, 0, canvas.height - chao.altura);
-  chao.desenha(contexto, 0 + chao.largura, canvas.height - chao.altura);
-
-  passaro.desenha(contexto);
-  passaro.queda();
+  Telas.telaAtiva.desenha();
+  Telas.telaAtiva.atualiza();
 
   //não sei para que serve ainda!
   //mas faz os quadros serem desenhados
   requestAnimationFrame(loop);
 }
 
+Telas.mudaTela(Telas.inicio);
 loop();
