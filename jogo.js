@@ -1,4 +1,4 @@
-import { Objeto, Personagem, Plataforma } from './objeto.js';
+import { Objeto, Personagem, Plataforma, Grupo } from './objeto.js';
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -42,7 +42,7 @@ const Telas = {
     click() {
       Telas.mudaTela(Telas.jogo);
     },
-    atualiza() {      
+    atualiza() {
       Telas.jogo.passaro.desenha(contexto);
       Telas.jogo.chao.movimenta();
       Telas.jogo.bg.movimenta();
@@ -65,15 +65,8 @@ const Telas = {
     chao: new Plataforma(sprite, 0, 610, 224, 112),
     bg: new Plataforma(sprite, 390, 0, 275, 204),
 
-    //canos
-    canoCeu1: new Objeto(sprite, 52, 169, 52, 400),
-    canoChao1: new Objeto(sprite, 0, 169, 52, 400),
-    canoCeu2: new Objeto(sprite, 52, 169, 52, 400),
-    canoChao2: new Objeto(sprite, 0, 169, 52, 400),
-    canoCeu3: new Objeto(sprite, 52, 169, 52, 400),
-    canoChao3: new Objeto(sprite, 0, 169, 52, 400),
-    canoCeu4: new Objeto(sprite, 52, 169, 52, 400),
-    canoChao4: new Objeto(sprite, 0, 169, 52, 400),
+    //grupo Canos
+    canos: new Grupo(),
     desenha() {
 
       //desenho fundo
@@ -91,19 +84,12 @@ const Telas = {
     },
     atualiza() {
       this.bg.desenha(contexto);
-      this.chao.desenha(contexto);
       this.passaro.desenha(contexto);
 
       //canos
-      this.canoCeu1.desenha(contexto);
-      this.canoChao1.desenha(contexto);
-      this.canoCeu2.desenha(contexto);
-      this.canoChao2.desenha(contexto);
-      this.canoCeu3.desenha(contexto);
-      this.canoChao3.desenha(contexto);
-      this.canoCeu4.desenha(contexto);
-      this.canoChao4.desenha(contexto);
+      this.canos.desenha(contexto);
 
+      //verifica colisão com o chão
       if(Objeto.colisaoVerificaY(this.passaro, this.chao)){
         setTimeout(() => {
           Telas.mudaTela(Telas.inicio)
@@ -111,76 +97,84 @@ const Telas = {
         return;
       }
 
+      //habilita a queda do passáro
       this.passaro.queda();
 
       this.chao.movimenta();
       this.bg.movimenta();
 
-      if(this.canoCeu1.x < (0 - this.canoCeu1.largura)){
-        let pos1 = getRandomInt( -this.canoCeu1.altura +100, this.chao.altura - 60);
-        this.canoCeu1.initPosY(-190 + pos1);
-        this.canoChao1.initPosY(this.canoCeu1.altura + 80 + this.canoCeu1.y);
-        this.canoCeu1.initPosX(contexto.width+ this.canoCeu1.largura + 240);
-        this.canoChao1.initPosX(contexto.width+ this.canoChao1.largura + 240);
-      }else{
-        this.canoCeu1.sumPosX(-1);
-        this.canoChao1.sumPosX(-1);
-      }
+      let self = this;
+      this.canos.objetosLista.forEach(function (obj, index){
 
-      if(this.canoCeu2.x < (0 - this.canoCeu2.largura)){
-        let pos2 = getRandomInt( -this.canoCeu2.altura +100, this.chao.altura - 60);
-        this.canoCeu2.initPosY(pos2);
-        this.canoChao2.initPosY(this.canoCeu2.altura + 80 + this.canoCeu2.y);
-        this.canoCeu2.initPosX(contexto.width+ this.canoCeu2.largura + 240);
-        this.canoChao2.initPosX(contexto.width+ this.canoChao2.largura + 240);
-      }else{
-        this.canoCeu2.sumPosX(-1);
-        this.canoChao2.sumPosX(-1);
-      }
+        if(obj.objetosLista[0].x < (0 - obj.objetosLista[0].largura)){
 
-      if(this.canoCeu3.x < (0 - this.canoCeu3.largura)){
-        let pos3 = getRandomInt( -this.canoCeu3.altura +100, this.chao.altura - 60);
-        this.canoCeu3.initPosY(pos3);
-        this.canoChao3.initPosY(this.canoCeu3.altura + 80 + this.canoCeu3.y);
-        this.canoCeu3.initPosX(contexto.width + this.canoCeu3.largura + 240);
-        this.canoChao3.initPosX(contexto.width + this.canoChao3.largura + 240);
-      }else{
-        this.canoCeu3.sumPosX(-1);
-        this.canoChao3.sumPosX(-1);
-      }
+          let Ty = getRandomInt(100, self.chao.y - 20);
+          let Sy = (Ty - 100 - obj.objetosLista[0].altura);
 
-      if(this.canoCeu4.x < (0 - this.canoCeu4.largura)){
-        let pos4 = getRandomInt( -this.canoCeu4.altura +100, this.chao.altura - 60);
-        this.canoCeu4.initPosY(pos4);
-        this.canoChao4.initPosY(this.canoCeu4.altura + 80 + this.canoCeu4.y);
-        this.canoCeu4.initPosX(contexto.width + this.canoCeu4.largura + 240);
-        this.canoChao4.initPosX(contexto.width + this.canoChao4.largura + 240);
-      }else{
-        this.canoCeu4.sumPosX(-1);
-        this.canoChao4.sumPosX(-1);
-      }
+          obj.objetosLista[0].initPosY(Sy);
+          obj.objetosLista[1].initPosY(Ty);
+
+          //coloca o subgrupo de canos no final da tela
+          obj.initPosX(contexto.width + obj.objetosLista[0].largura + 280);
+        }else{
+          obj.sumPosX(-1);
+        }
+
+      });
+
+      //verifica colisão passaro
+      this.canos.objetosLista.forEach(function (obj, index){
+
+        //verifica se ja entrou no x de um dos canos
+        if(self.passaro.x > obj.objetosLista[0].x){
+          obj.objetosLista.forEach( function(subObj, index){
+            //colisão y cano céu
+            if(index == 0){
+              if( self.passaro.y <= subObj.y + subObj.altura){
+                self.passaro.colisaoSom.play();
+                  Telas.mudaTela(Telas.inicio);
+                return;
+              }
+            }
+
+            //colisão y cano chão
+            if(index == 1){
+              if((self.passaro.y + self.passaro.altura) >= subObj.y){
+                self.passaro.colisaoSom.play();
+                  Telas.mudaTela(Telas.inicio);
+                return;
+              }
+            }
+          });
+        }
+      });
+
+      this.chao.desenha(contexto);
+
     },
     inicializa() {
-      let pos1 = getRandomInt( -this.canoCeu1.altura +100, this.chao.altura - 60);
-      let pos2 = getRandomInt( -this.canoCeu2.altura +100, this.chao.altura - 60);
-      let pos3 = getRandomInt( -this.canoCeu3.altura +100, this.chao.altura - 60);
-      let pos4 = getRandomInt( -this.canoCeu4.altura +100, this.chao.altura - 60);
-      this.canoCeu1.habilitarColisao();
-      this.canoCeu2.habilitarColisao();
-      this.canoCeu3.habilitarColisao();
-      this.canoCeu4.habilitarColisao();
 
-      this.canoCeu1.desenha(contexto, contexto.width + this.canoCeu1.largura + (160 * 1), -190 + pos1);
-      this.canoChao1.desenha(contexto, contexto.width + this.canoChao1.largura + (160 * 1), this.canoCeu1.altura + 80 + this.canoCeu1.y);
+      this.canos = new Grupo();
 
-      this.canoCeu2.desenha(contexto, contexto.width + this.canoCeu2.largura + (160 * 2), -190 + pos2);
-      this.canoChao2.desenha(contexto, contexto.width + this.canoChao2.largura + (160 * 2), this.canoCeu2.altura + 80 + this.canoCeu2.y);
+      let qtdCanos = 4;
 
-      this.canoCeu3.desenha(contexto, contexto.width + this.canoCeu3.largura + (160 * 3), -190 + pos3);
-      this.canoChao3.desenha(contexto, contexto.width + this.canoChao3.largura + (160 * 3), this.canoCeu3.altura + 80 + this.canoCeu3.y);
+      //cria os 4 subgrupos de canos para o gruo canos com espaçamentos ja preparados
+      for(let i = 0; i < qtdCanos; i++){
+        let SubGrupoCano = new Grupo();
 
-      this.canoCeu4.desenha(contexto, contexto.width + this.canoCeu4.largura + (160 * 4), -190 + pos4);
-      this.canoChao4.desenha(contexto, contexto.width + this.canoChao4.largura + (160 * 4), this.canoCeu4.altura + 80 + this.canoCeu4.y);
+        let canoCeu1 = new Objeto(sprite, 52, 169, 52, 400);
+        let canoChao1 = new Objeto(sprite, 0, 169, 52, 400);
+
+        let Ty = getRandomInt(100, this.chao.y - 20);
+        let Sy = (Ty - 100 - canoCeu1.altura);
+        canoChao1.desenha(contexto, contexto.width + (i * 180) , Ty);
+        canoCeu1.desenha(contexto, contexto.width + (i * 180) , Sy);
+
+        SubGrupoCano.addObjeto(canoCeu1);
+        SubGrupoCano.addObjeto(canoChao1);
+
+        this.canos.addObjeto(SubGrupoCano);
+      }
     }
   },
   telaAtiva: {},

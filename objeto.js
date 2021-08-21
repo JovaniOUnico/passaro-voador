@@ -110,7 +110,6 @@ class Objeto {
     this.x = movimentacao % repeteEm;
   }
 }
-
 class Personagem extends Objeto {
 
   static frameAtual = 0;
@@ -184,7 +183,6 @@ class Personagem extends Objeto {
     }
   }
 }
-
 class Plataforma extends Objeto{
   desenha(contexto, x, y){
     //posição no canvas
@@ -225,4 +223,46 @@ class Plataforma extends Objeto{
   }
 }
 
-export {Objeto, Personagem, Plataforma}
+class Grupo {
+
+  constructor (){
+    this.objetosLista = [];
+  }
+
+  addObjeto(obj) {
+    this.objetosLista.push(obj);
+  }
+
+  initPosX(x){
+    this.objetosLista.forEach(function (obj){
+      obj.initPosX(x);
+    });
+  }
+
+  initPosY(y){
+    this.objetosLista.forEach(function (obj){
+      obj.initPosY(y);
+    });
+  }
+
+  sumPosX(x){
+    this.objetosLista.forEach(function (obj){
+      obj.sumPosX(x);
+    });
+  }
+
+  sumPosY(y){
+    this.objetosLista.forEach(function (obj){
+      obj.sumPosY(y);
+    });
+  }
+  
+  desenha(contexto, x, y) {
+    this.objetosLista.forEach(function (obj){
+      obj.desenha(contexto, x, y);
+    });
+  }
+
+}
+
+export {Objeto, Personagem, Plataforma, Grupo}
