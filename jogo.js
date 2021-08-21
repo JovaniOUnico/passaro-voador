@@ -1,4 +1,4 @@
-import { Objeto, Personagem, Plataforma, Grupo } from './objeto.js';
+import { Objeto, Personagem, Plataforma, Grupo, Placar } from './objeto.js';
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
@@ -11,6 +11,12 @@ console.log('[JovaniOUnico] Passaro Voador');
 //criando som de colisão
 const som_HIT = new Audio();
 som_HIT.src = './sons/efeitos_hit.wav';
+
+const som_POINT = new Audio();
+som_POINT.src = './sons/efeitos_ponto.wav';
+
+const som_JUMP = new Audio();
+som_JUMP.src = './sons/efeitos_pulo.wav';
 
 //criando imagem via javascript
 const sprite = new Image();
@@ -64,6 +70,8 @@ const Telas = {
     passaro: new Personagem(sprite, 33, 24, [{spriteX: 0, spriteY: 0},{spriteX: 0, spriteY: 26},{spriteX: 0, spriteY: 52},{spriteX: 0, spriteY: 26}], 10, 50),
     chao: new Plataforma(sprite, 0, 610, 224, 112),
     bg: new Plataforma(sprite, 390, 0, 275, 204),
+    placar: new Placar(),
+    frames: 0,
 
     //grupo Canos
     canos: new Grupo(),
@@ -72,12 +80,6 @@ const Telas = {
       //desenho fundo
       contexto.fillStyle = '#70c5ce';
       contexto.fillRect(0, 0, canvas.width, canvas.height);
-
-      this.passaro.desenha(contexto);
-
-      //ativa a colisão do passaro
-      this.passaro.habilitarColisao();
-      this.passaro.somColisao(som_HIT);
     },
     click() {
       this.passaro.pula();
@@ -88,12 +90,18 @@ const Telas = {
 
       //canos
       this.canos.desenha(contexto);
+      this.chao.desenha(contexto);
+
+      //verifica colisão com o teto
+      if(this.passaro.y < 0){
+        this.passaro.colisaoSom.play();
+        Telas.mudaTela(Telas.gameOver);
+        return;
+      }
 
       //verifica colisão com o chão
       if(Objeto.colisaoVerificaY(this.passaro, this.chao)){
-        setTimeout(() => {
-          Telas.mudaTela(Telas.inicio)
-        }, 500);
+        Telas.mudaTela(Telas.gameOver);
         return;
       }
 
@@ -126,13 +134,13 @@ const Telas = {
       this.canos.objetosLista.forEach(function (obj, index){
 
         //verifica se ja entrou no x de um dos canos
-        if(self.passaro.x > obj.objetosLista[0].x){
+        if((self.passaro.x + self.passaro.largura) > obj.objetosLista[0].x){
           obj.objetosLista.forEach( function(subObj, index){
             //colisão y cano céu
             if(index == 0){
               if( self.passaro.y <= subObj.y + subObj.altura){
                 self.passaro.colisaoSom.play();
-                  Telas.mudaTela(Telas.inicio);
+                Telas.mudaTela(Telas.gameOver);
                 return;
               }
             }
@@ -141,7 +149,7 @@ const Telas = {
             if(index == 1){
               if((self.passaro.y + self.passaro.altura) >= subObj.y){
                 self.passaro.colisaoSom.play();
-                  Telas.mudaTela(Telas.inicio);
+                Telas.mudaTela(Telas.gameOver);
                 return;
               }
             }
@@ -149,12 +157,29 @@ const Telas = {
         }
       });
 
-      this.chao.desenha(contexto);
+      const intervaloFrames = 280;
+      const passouIntervalo = (this.frames+1) % intervaloFrames === 0;
+  
+      if(passouIntervalo){
+        this.placar.pontuacao++;
+        som_POINT.play();
+      }
 
+      this.placar.desenha(contexto, contexto.width, 40);
+      this.frames++;
     },
     inicializa() {
 
+      this.passaro.desenha(contexto);
+
+      //ativa a colisão do passaro
+      this.passaro.habilitarColisao();
+      this.passaro.somColisao(som_HIT);
+      this.passaro.somPulo(som_JUMP);
+
       this.canos = new Grupo();
+      this.placar = new Placar();
+      this.frames = 0;
 
       let qtdCanos = 4;
 
@@ -177,7 +202,49 @@ const Telas = {
       }
     }
   },
+  gameOver: {
+    telaGameOver: new Objeto(sprite, 133, 150, 228, 204),
+    medalhas: [new Objeto(sprite, 0, 78, 45, 45), new Objeto(sprite, 47, 78, 45, 45), new Objeto(sprite, 47, 123, 45, 45), new Objeto(sprite, 0, 123, 45, 45)],
+    desenha() { 
+      this.telaGameOver.desenha(contexto, contexto.width, contexto.height);
+    },
+    click() { 
+      Telas.mudaTela(Telas.inicio);
+    },
+    atualiza() {
+
+      this.telaGameOver.desenha(contexto, contexto.width/7, contexto.height/4);
+
+      contexto.font = "28px 'Oswald', sans-serif";
+      contexto.fillStyle = 'white';
+      contexto.textAlign = 'right';
+      contexto.fillText(`${Telas.jogo.placar.pontuacao}`, contexto.width/7 + 200, contexto.height/4 + 103);
+
+      contexto.font = "28px 'Oswald', sans-serif";
+      contexto.fillStyle = 'white';
+      contexto.textAlign = 'right';
+      contexto.fillText(`${Telas.melhorPontuacao}`, contexto.width/7 + 200, contexto.height/4 + 143);
+
+      let med = 0;
+      if(Telas.jogo.placar.pontuacao < 5){
+        med =0;
+      }else if(Telas.jogo.placar.pontuacao >= 5 && Telas.jogo.placar.pontuacao < 10){
+        med =1;
+      }else if(Telas.jogo.placar.pontuacao >= 10 && Telas.jogo.placar.pontuacao < 25){
+        med =2;
+      }else{
+        med =3;
+      }
+      this.medalhas[med].desenha(contexto, contexto.width/7 + 26, 210);
+    },
+    inicializa() { 
+      if(Telas.melhorPontuacao <= Telas.jogo.placar.pontuacao){
+        Telas.melhorPontuacao = Telas.jogo.placar.pontuacao;
+      }
+    },
+  },
   telaAtiva: {},
+  melhorPontuacao: 0,
   mudaTela(novaTela) {
     this.telaAtiva = novaTela;
     this.telaAtiva.inicializa();

@@ -136,6 +136,9 @@ class Personagem extends Objeto {
   }
   pula(){
     this.velocidade = - this.pulo;
+    if(this.somPulo != undefined) {
+      this.somPulo.play();
+    }
   }
   queda(){
     this.velocidade = this.velocidade + this.gravidade;
@@ -182,6 +185,9 @@ class Personagem extends Objeto {
       }
     }
   }
+  somPulo(som){
+    this.somPulo = som;
+  }
 }
 class Plataforma extends Objeto{
   desenha(contexto, x, y){
@@ -220,6 +226,20 @@ class Plataforma extends Objeto{
       this.largura, this.altura
     );
 
+  }
+}
+
+class Placar{
+
+  constructor (){
+    this.pontuacao = 0;
+  }
+
+  desenha(contexto, x, y){
+    contexto.font = "50px 'Oswald', sans-serif";
+    contexto.fillStyle = 'white';
+    contexto.textAlign = 'right';
+    contexto.fillText(`${this.pontuacao}`, x, y);
   }
 }
 
@@ -265,4 +285,4 @@ class Grupo {
 
 }
 
-export {Objeto, Personagem, Plataforma, Grupo}
+export {Objeto, Personagem, Plataforma, Grupo, Placar}
