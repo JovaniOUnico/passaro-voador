@@ -2,4 +2,4 @@
 
 Cópia simples do jogo flappy bird
 
-https://i.imgur.com/sPAk6pX.png
+<img src="https://i.imgur.com/sPAk6pX.png" >
